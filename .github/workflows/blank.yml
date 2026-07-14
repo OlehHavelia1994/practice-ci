@@ -46,7 +46,7 @@ jobs:
 
       - name: Upload python artifacts # шаг для загрузки артефактов с результатами тестов и покрытия кода
         if: ${{ github.ref_name == 'main' }} # условие для запуска шага только при пуше в ветку main
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with: # парамтры для шага upload-artifact
           name: python-artifacts # имя артефакта, который будет отображаться в UI
           path: . # путь к директории с артефактами, которые нужно загрузить
