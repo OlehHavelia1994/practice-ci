@@ -8,6 +8,7 @@ on: # триггер для запуска workflow
 
 env: # переменные окружения, которые будут доступны во всех шагах
   PYTHON_VERSION: "3.10"
+  PYTHON_APP_NAME: "practice-python-app"
 jobs:
   python-ci: # имя джоба, которое будет отображаться в UI
     runs-on: ubuntu-latest # используемый образ для запуска джоба
@@ -62,6 +63,16 @@ jobs:
         with: # параметры для шага download-artifact
           name: python-artifacts # имя артефакта, который нужно скачать
           path: . # путь к директории, куда нужно скачать артефакт
-      # - name: Build Docker image # шаг для сборки Docker-образа
-      #   run: |
-      #     docker build -t my-image:latest .
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: ./src
+          push: true
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/${{ env.PYTHON_APP_NAME }}:${{ github.sha }}
