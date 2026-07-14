@@ -1,43 +1,67 @@
 name: CI
 run-name: ${{ github.workflow }}-${{ github.ref_name }}
-on:
-  push:
+on: # триггер для запуска workflow
+  push: # на запуск workflow при пуше в ветку main
     branches: ["main"]
-  pull_request:
+  pull_request: # на запуск workflow при создании PR в ветку main
     branches: ["main"]
 
-env:
-  PYTHON_VERSION: "3.13"
+env: # переменные окружения, которые будут доступны во всех шагах
+  PYTHON_VERSION: "3.10"
 jobs:
-  python-ci:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./src
+  python-ci: # имя джоба, которое будет отображаться в UI
+    runs-on: ubuntu-latest # используемый образ для запуска джоба
+    defaults: # значения по умолчанию для шагов
+      run: # значения по умолчанию для шага run
+        working-directory: ./src # рабочая директория по дефолту чтобы не прописывать путь к src в каждом шаге
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@v4 # шаг для клонирования репозитория в рабочую директорию
+      - uses: actions/setup-python@v6 # шаг для установки Python в рабочую директорию
         name: Setup Python ${{ env.PYTHON_VERSION }}
-        with:
+        with: # параметры для шага setup-python
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install dependencies
+      - name: Install dependencies # шаг для установки зависимостей проекта
         run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest pytest-cov
           pip install -r requirements.txt
 
-      - name: Lint with flake8
+      - name: Lint with flake8 # шаг для проверки кода на соответствие стандартам PEP8 с помощью flake8.
+        # cd ../ - переход в корневую директорию проекта, чтобы учелся файл .flake8 в котором прописаны настройки для flake8
         run: |
           cd ../
           flake8 . --show-source --statistics
 
-      - name: Check Complexity
+      - name: Check Complexity # шаг для проверки сложности кода с помощью flake8
+        # cd ../ - переход в корневую директорию проекта, чтобы учелся файл .flake8 в котором прописаны настройки для flake8
         run: |
           cd ../
           flake8 . --exit-zero --max-complexity=10 --statistics
 
-      - name: Test with pytest
+      - name: Test with pytest # шаг для запуска тестов с помощью pytest и генерации отчета о покрытии кода
         run: |
           pytest -v --cov-report=term-missing --cov=. --cov-report=json
+
+      - name: Upload python artifacts # шаг для загрузки артефактов с результатами тестов и покрытия кода
+        if: ${{ github.ref_name == 'main' }} # условие для запуска шага только при пуше в ветку main
+        uses: actions/upload-artifact@v3
+        with: # парамтры для шага upload-artifact
+          name: python-artifacts # имя артефакта, который будет отображаться в UI
+          path: . # путь к директории с артефактами, которые нужно загрузить
+
+  build-docker-image: # имя джоба, которое будет отображаться в UI
+    if: ${{ github.ref_name == 'main' }} # условие для запуска джоба только при пуше в ветку main
+    runs-on: ubuntu-latest # используемый образ для запуска джоба
+    needs: python-ci # зависимость от джоба python-ci, чтобы этот джоб запускался только после успешного завершения python-ci
+
+    steps:
+      - name: Download python artifacts # шаг для скачивания артефактов с результатами тестов и покрытия кода
+        uses: actions/download-artifact@v4 # шаг для скачивания артефактов с результатами тестов и покрытия кода
+        with: # параметры для шага download-artifact
+          name: python-artifacts # имя артефакта, который нужно скачать
+          path: . # путь к директории, куда нужно скачать артефакт
+      # - name: Build Docker image # шаг для сборки Docker-образа
+      #   run: |
+      #     docker build -t my-image:latest .
