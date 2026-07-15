@@ -52,6 +52,13 @@ jobs:
           name: python-artifacts # имя артефакта, который будет отображаться в UI
           path: . # путь к директории с артефактами, которые нужно загрузить
 
+      - name: Upload Helm artifacts
+        if: ${{ github.ref_name == 'main' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-artifacts
+          path: ${{ github.workspace }}/helm-charts
+
   build-docker-image: # имя джоба, которое будет отображаться в UI
     if: ${{ github.ref_name == 'main' }} # условие для запуска джоба только при пуше в ветку main
     runs-on: ubuntu-latest # используемый образ для запуска джоба
@@ -64,15 +71,50 @@ jobs:
           name: python-artifacts # имя артефакта, который нужно скачать
           path: . # путь к директории, куда нужно скачать артефакт
 
-      - name: Login to Docker Hub
+      - name: Login to Docker Hub # шаг для авторизации в Docker Hub
         uses: docker/login-action@v4
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }} # имя пользователя для авторизации в Docker Hub, которое хранится в секретах репозитория
+          password: ${{ secrets.DOCKERHUB_TOKEN }} # токен для авторизации в Docker Hub, который хранится в секретах репозитория
 
-      - name: Build and push
+      - name: Build and push # шаг для сборки и публикации Docker-образа в Docker Hub
         uses: docker/build-push-action@v7
         with:
-          context: ./src
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.PYTHON_APP_NAME }}:${{ github.sha }}
+          context: ./src # путь к директории с Dockerfile. Говорит докеру где искать Dockerfile конфигурацию для сборки образа
+          push: true # флаг для публикации Docker-образа в Docker Hub
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.PYTHON_APP_NAME }}:${{ github.sha }} # тег для Docker-образа, который будет содержать имя пользователя, имя приложения и хэш коммита
+
+  helm-package: # имя джоба, которое будет отображаться в UI
+    if: ${{ github.ref_name == 'main' }} # условие для запуска джоба только при пуше в ветку main
+    runs-on: ubuntu-latest # используемый образ для запуска джоба
+    needs: python-ci # зависимость от джоба python-ci, чтобы этот джоб запускался только после успешного завершения python-ci
+
+    steps:
+      - name: Download helm artifacts # шаг для скачивания артефактов с результатами тестов и покрытия кода
+        uses: actions/download-artifact@v4 # шаг для скачивания артефактов с результатами тестов и покрытия кода
+        with: # параметры для шага download-artifact
+          name: helm-artifacts # имя артефакта, который нужно скачать
+          path: . # путь к директории, куда нужно скачать артефакт
+
+      - name: Set up Helm # шаг для установки Helm в рабочую директорию
+        uses: azure/setup-helm@v5.0.0 # шаг для установки Helm в рабочую директорию
+        with: # параметры для шага setup-helm
+          version: v3.18.4 # версия Helm, которую нужно установить
+
+      - name: Helm Lint # шаг для проверки Helm-чарта на соответствие стандартам с помощью helm lint
+        run: |
+          helm lint ./helm-charts/kube2py
+
+      - name: Helm Template # шаг для генерации Kubernetes-манифестов из Helm-чарта с помощью helm template
+        run: |
+          helm template kube2py ./helm-charts/kube2py -f ./helm-charts/kube2py/values.yaml
+
+      - name: Helm Package # шаг для упаковки Helm-чарта в tgz-архив с помощью helm package
+        run: |
+          helm package ./helm-charts/kube2py
+
+      - name: Upload helm package # шаг для загрузки tgz-архива с Helm-чартом в артефакты GitHub Actions
+        uses: actions/upload-artifact@v4 # шаг для загрузки артефактов с результатами тестов и покрытия кода
+        with: # параметры для шага upload-artifact
+          name: helm-package # имя артефакта, который будет отображаться в UI
+          path: ./*.tgz # путь к директории с артефактами, которые нужно загрузить
