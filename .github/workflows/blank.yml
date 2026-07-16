@@ -109,7 +109,7 @@ jobs:
         run: |
           helm template kube2py ./kube2py -f ./kube2py/values.yaml
 
-      - name: Helm Package # шаг для упаковки Helm-чарта в tgz-архив с помощью helm package
+      - name: Helm Package # шаг для упаковки Helm-чарта в tgz-архив с помощью helm package. Helm может работать только с архивами формата tgz, поэтому upload не подойдет в данном случае.
         run: |
           helm package ./kube2py
 
@@ -118,3 +118,19 @@ jobs:
         with: # параметры для шага upload-artifact
           name: helm-package # имя артефакта, который будет отображаться в UI
           path: ./*.tgz # путь к директории с артефактами, которые нужно загрузить
+
+  deploy-helm:
+    needs: ["helm-package", "build-docker-image"]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download helm package
+        uses: actions/download-artifact@v4
+        with:
+          name: helm-package
+          path: .
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5.0.0
+        with:
+          version: v3.18.4
