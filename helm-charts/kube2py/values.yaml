@@ -20,10 +20,10 @@ kube2py:
     APP_ENV: "testing-helm"
 
   secrets:
-    password: placeholder
-    login: placeholder
+    password: "placeholder"
+    login: "placeholder"
     external_endpoint: http://httpbin-api.mateapp.svc.cluster.local
-    DB_CONNECTION: placeholder
+    DB_CONNECTION: "placeholder"
 
   resources:
     requests:
