@@ -90,6 +90,7 @@ jobs:
     needs: python-ci # зависимость от джоба python-ci, чтобы этот джоб запускался только после успешного завершения python-ci
 
     steps:
+      - uses: actions/checkout@v4 # шаг для клонирования репозитория в рабочую директорию
       - name: Download helm artifacts # шаг для скачивания артефактов с результатами тестов и покрытия кода
         uses: actions/download-artifact@v4 # шаг для скачивания артефактов с результатами тестов и покрытия кода
         with: # параметры для шага download-artifact
