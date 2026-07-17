@@ -120,17 +120,43 @@ jobs:
           path: ./*.tgz # путь к директории с артефактами, которые нужно загрузить
 
   deploy-helm:
+    environment: development
+    name: Deploy Helm
     needs: ["helm-package", "build-docker-image"]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
+      - uses: actions/checkout@v4
       - name: Download helm package
         uses: actions/download-artifact@v4
         with:
           name: helm-package
           path: .
 
+      - name: Download helm Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: helm-artifacts
+          path: .
+
       - name: Set up Helm
         uses: azure/setup-helm@v5.0.0
         with:
           version: v3.18.4
+
+      - name: Setup Kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Deploy Helm to Development
+        run: |
+          helm upgrade --install --atomic --wait --timeout 3600s --debug kube2py ./kube2py-*.tgz \
+          -f ./kube2py/values.yaml \
+          --set mysql.configs.MYSQL_ROOT_PASSWORD=${{ secrets.MYSQL_ROOT_PASSWORD }} \
+          --set mysql.configs.MYSQL_USER=${{ secrets.MYSQL_USER }} \
+          --set mysql.configs.MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }} \
+          --set kube2py.secrets.DB_CONNECTION=${{ secrets.DB_CONNECTION }} \
+          --set kube2py.secrets.password=${{ secrets.KUBE2PY_PASSWORD }} \
+          --set kube2py.secrets.login=${{ secrets.KUBE2PY_LOGIN }} \
+          --set kube2py.image.version=${{ github.sha }} \
+
+
