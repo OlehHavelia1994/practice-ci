@@ -121,7 +121,7 @@ jobs:
 
   deploy-helm-dev:
     name: Deploy Helm to Development
-    uses: "./.github/workflows/deploy-workflow.yml"
+    uses: ./.github/workflows/deploy-workflow.yml
     needs: ["helm-package", "build-docker-image"]
     secrets: inherit
     with:
