@@ -13,7 +13,6 @@ on:
         type: string
       helm-values-path:
         description: 'Path to Helm values file'
-        required: true
         type: string
         default: './kube2py/values.yaml'
 jobs:
