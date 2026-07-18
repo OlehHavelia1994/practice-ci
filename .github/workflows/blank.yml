@@ -126,7 +126,6 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
       - name: Download helm package
         uses: actions/download-artifact@v4
         with:
