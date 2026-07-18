@@ -8,7 +8,7 @@ on: # триггер для запуска workflow
 
 env: # переменные окружения, которые будут доступны во всех шагах
   PYTHON_VERSION: "3.10"
-  PYTHON_APP_NAME: "practice-python-app"
+  PYTHON_APP_NAME: "kube2py"
 jobs:
   python-ci: # имя джоба, которое будет отображаться в UI
     runs-on: ubuntu-latest # используемый образ для запуска джоба
