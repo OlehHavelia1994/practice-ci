@@ -1,0 +1,60 @@
+name: Helm Upgrade
+run-name: ${{ github.actor }} - ${{ github.ref_name }}
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        type: string
+      version:
+        description: 'Version to deploy'
+        required: true
+        type: string
+      helm-values-path:
+        description: 'Path to Helm values file'
+        required: true
+        type: string
+        default: './kube2py/values.yaml'
+jobs:
+  deploy-helm:
+    environment: ${{ inputs.environment }} # имя окружения, в которое будет деплоиться Helm-чарт. В GitHub Actions можно создавать окружения, чтобы разграничивать деплой на разные среды (например, dev, staging, prod). В данном случае деплой будет происходить в окружение development.
+    name: ${{ inputs.environment }} - Deploy Helm # имя джоба, которое будет отображаться в UI. В данном случае имя джоба будет содержать имя окружения, в которое будет деплоиться Helm-чарт.
+    runs-on: self-hosted # используемый образ для запуска джоба. В данном случае используется self-hosted runner, который настроен на локальной машине. Это позволяет использовать локальный kubectl и helm для деплоя в кластер Kubernetes.
+
+    steps:
+      - name: Download helm package
+        uses: actions/download-artifact@v4
+        with:
+          name: helm-package
+          path: .
+
+      - name: Download helm Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: helm-artifacts
+          path: .
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5.0.0
+        with:
+          version: v3.18.4
+
+      - name: Setup Kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Deploy Helm to Development # шаг для деплоя Helm-чарта в кластер Kubernetes с помощью helm upgrade --install. В данном случае используется флаг --atomic, который откатывает изменения в случае ошибки, и флаг --wait, который ждет завершения деплоя перед продолжением выполнения джоба. Флаг --timeout 3600s задает таймаут ожидания деплоя в 1 час. Также используется флаг --debug, который выводит подробную информацию о деплое в логах.
+        run: |
+          helm upgrade --install --atomic --wait --timeout 3600s --debug kube2py ./kube2py-*.tgz \
+            -f ./kube2py/values.yaml \
+            --set mysql.configs.MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
+            --set mysql.configs.MYSQL_USER="${{ secrets.MYSQL_USER }}" \
+            --set mysql.configs.MYSQL_PASSWORD="${{ secrets.MYSQL_PASSWORD }}" \
+            --set kube2py.secrets.DB_CONNECTION="${{ secrets.DB_CONNECTION }}" \
+            --set kube2py.secrets.password="${{ secrets.KUBE2PY_PASSWORD }}" \
+            --set kube2py.secrets.login="${{ secrets.KUBE2PY_LOGIN }}" \
+            --set kube2py.image.version="${{ inputs.version }}" \
+            --set global.environment="${{ inputs.environment }}"
+
+
+
