@@ -20,7 +20,7 @@ spec:
    spec:
      containers:
      - name: {{ .Values.kube2py.image.name }}
-       image: {{ .Values.kube2py.image.repository }}:{{ .Values.kube2py.image.version }}
+       image: {{ .Values.kube2py.image.repository }}:{{ .Values.kube2py.image.tag }}
        volumeMounts:
        - name: data
          mountPath: /app/data
