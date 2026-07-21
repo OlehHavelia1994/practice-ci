@@ -121,9 +121,9 @@ jobs:
 
   deploy-helm-dev:
     name: Deploy Helm to Development
-    uses: ./.github/workflows/deploy-workflow.yml
+    uses: ./.github/workflows/deploy-workflow.yml # Путь к workflow deploy-workflow.yml(шаблон), который будет использоваться для деплоя Helm-чарта в кластер Kubernetes. В данном случае используется относительный путь к workflow, который находится в директории .github/workflows.
     needs: ["helm-package", "build-docker-image"]
-    secrets: inherit
-    with:
-      environment: "development"
+    secrets: inherit # наследуем все секреты из родительского workflow
+    with: # параметры для workflow deploy-workflow.yml
+      environment: "development" # Передача параметра environment в GitHub->environment со значение development в workflow deploy-workflow.yml. В данном случае деплой будет происходить в окружение development.
       version: ${{ github.sha }}
