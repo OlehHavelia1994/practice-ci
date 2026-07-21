@@ -63,7 +63,8 @@ jobs:
             --set kube2py.secrets.login="${{ secrets.KUBE2PY_LOGIN }}" \
             --set kube2py.image.repository="${{ secrets.DOCKERHUB_USERNAME }}/kube2py" \
             --set kube2py.image.version="${{ inputs.version }}" \
-            --set global.environment="${{ inputs.environment }}"
+            --set global.environment="${{ inputs.environment }}" && \
+            kubectl get pods -n mateapp
 
 
 
