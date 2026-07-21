@@ -22,7 +22,7 @@ on:
 jobs:
   deploy-helm:
     environment: ${{ inputs.environment }} # имя окружения, в которое будет деплоиться Helm-чарт. В GitHub Actions можно создавать окружения, чтобы разграничивать деплой на разные среды (например, dev, staging, prod). В данном случае деплой будет происходить в окружение development.
-    name: ${{ inputs.environment }} - Deploy Helm # имя джоба, которое будет отображаться в UI. В данном случае имя джоба будет содержать имя окружения, в которое будет деплоиться Helm-чарт.
+    name: ${{ inputs.helm-release-name }} - Deploy Helm # имя джоба, которое будет отображаться в UI. В данном случае имя джоба будет содержать имя окружения, в которое будет деплоиться Helm-чарт.
     runs-on: ubuntu-latest  #self-hosted используемый образ для запуска джоба. В данном случае используется self-hosted runner, который настроен на локальной машине. Это позволяет использовать локальный kubectl и helm для деплоя в кластер Kubernetes.
 
     steps:
@@ -53,7 +53,7 @@ jobs:
 
       - name: Deploy Helm to Development # шаг для деплоя Helm-чарта в кластер Kubernetes с помощью helm upgrade --install. В данном случае используется флаг --atomic, который откатывает изменения в случае ошибки, и флаг --wait, который ждет завершения деплоя перед продолжением выполнения джоба. Флаг --timeout 3600s задает таймаут ожидания деплоя в 1 час. Также используется флаг --debug, который выводит подробную информацию о деплое в логах.
         run: |
-          helm upgrade --install --atomic --wait --timeout 3600s --debug ${{ inputs.helm-release-name }} ./kube2py-*.tgz \
+          helm upgrade --install --atomic --wait --timeout 300s --debug ${{ inputs.helm-release-name }} ./kube2py-*.tgz \
             -f ${{ inputs.helm-values-path }} \
             --set mysql.configs.MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
             --set mysql.configs.MYSQL_USER="${{ secrets.MYSQL_USER }}" \
@@ -61,6 +61,7 @@ jobs:
             --set kube2py.secrets.DB_CONNECTION="${{ secrets.DB_CONNECTION }}" \
             --set kube2py.secrets.password="${{ secrets.KUBE2PY_PASSWORD }}" \
             --set kube2py.secrets.login="${{ secrets.KUBE2PY_LOGIN }}" \
+            --set kube2py.image.repository="${{ secrets.DOCKERHUB_USERNAME }}/kube2py" \
             --set kube2py.image.version="${{ inputs.version }}" \
             --set global.environment="${{ inputs.environment }}"
 
