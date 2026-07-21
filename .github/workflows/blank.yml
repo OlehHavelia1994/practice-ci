@@ -112,7 +112,7 @@ jobs:
 
       - name: Helm Package # шаг для упаковки Helm-чарта в tgz-архив с помощью helm package. Helm может работать только с архивами формата tgz, поэтому upload не подойдет в данном случае.
         run: |
-          helm package ./kube2py
+          helm package ./kube2py --app-version ${{ github.sha }}
 
       - name: Upload helm package # шаг для загрузки tgz-архива с Helm-чартом в артефакты GitHub Actions
         uses: actions/upload-artifact@v4 # шаг для загрузки артефактов с результатами тестов и покрытия кода
@@ -128,5 +128,5 @@ jobs:
     needs: ["helm-package", "build-docker-image"]
     secrets: inherit # наследуем все секреты из родительского workflow
     with: # параметры для workflow deploy-workflow.yml
-      environment: "development" # Передача параметра environment в GitHub->environment со значение development в workflow deploy-workflow.yml. В данном случае деплой будет происходить в окружение development.
+      environment: development # Передача параметра environment в GitHub->environment со значение development в workflow deploy-workflow.yml. В данном случае деплой будет происходить в окружение development.
       version: ${{ github.sha }}

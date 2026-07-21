@@ -53,7 +53,7 @@ jobs:
 
       - name: Deploy Helm to Development # шаг для деплоя Helm-чарта в кластер Kubernetes с помощью helm upgrade --install. В данном случае используется флаг --atomic, который откатывает изменения в случае ошибки, и флаг --wait, который ждет завершения деплоя перед продолжением выполнения джоба. Флаг --timeout 3600s задает таймаут ожидания деплоя в 1 час. Также используется флаг --debug, который выводит подробную информацию о деплое в логах.
         run: |
-          helm upgrade --install --atomic --wait --timeout 300s --debug ${{ inputs.helm-release-name }} ./kube2py-*.tgz \
+          helm upgrade --install --wait --timeout 600s --debug ${{ inputs.helm-release-name }} ./kube2py-*.tgz \
             -f ${{ inputs.helm-values-path }} \
             --set mysql.configs.MYSQL_ROOT_PASSWORD="${{ secrets.MYSQL_ROOT_PASSWORD }}" \
             --set mysql.configs.MYSQL_USER="${{ secrets.MYSQL_USER }}" \
