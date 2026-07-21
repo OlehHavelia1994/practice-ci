@@ -12,7 +12,7 @@ kube2py:
   image:
     name: kube2py
     repository: olegglv/kube2py
-    tag: 2.0.0
+    tag: "2.0.0"
 
   configs:
     EXTERNAL_ENDPOINT: "http://httpbin-api.mateapp.svc.cluster.local"

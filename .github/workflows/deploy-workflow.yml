@@ -22,7 +22,7 @@ on:
 jobs:
   deploy-helm:
     environment: ${{ inputs.environment }} # имя окружения, в которое будет деплоиться Helm-чарт. В GitHub Actions можно создавать окружения, чтобы разграничивать деплой на разные среды (например, dev, staging, prod). В данном случае деплой будет происходить в окружение development.
-    name: ${{ inputs.helm-release-name }} - Deploy Helm # имя джоба, которое будет отображаться в UI. В данном случае имя джоба будет содержать имя окружения, в которое будет деплоиться Helm-чарт.
+    name: ${{ inputs.environment }} - Deploy Helm # имя джоба, которое будет отображаться в UI. В данном случае имя джоба будет содержать имя окружения, в которое будет деплоиться Helm-чарт.
     runs-on: ubuntu-latest  #self-hosted используемый образ для запуска джоба. В данном случае используется self-hosted runner, который настроен на локальной машине. Это позволяет использовать локальный kubectl и helm для деплоя в кластер Kubernetes.
 
     steps:
@@ -63,16 +63,5 @@ jobs:
             --set kube2py.secrets.login="${{ secrets.KUBE2PY_LOGIN }}" \
             --set kube2py.image.tag="${{ inputs.version }}"
 
-      - name: Debug - Get Pods and Events (if failed)
-        if: always()
-        run: |
-          echo "=== PODS STATUS ==="
-          kubectl get pods -A -o wide
-          echo "=== K8S EVENTS ==="
-          kubectl get events -n mateapp --sort-by='.metadata.creationTimestamp' || true
-          echo "=== LOGS KUBE2PY ==="
-          kubectl logs -n mateapp -l app.kubernetes.io/name=kube2py --tail=50 || true
-          echo "=== LOGS MYSQL ==="
-          kubectl logs -n mateapp -l app.kubernetes.io/name=mysql --tail=50 || true
 
 
