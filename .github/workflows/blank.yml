@@ -104,15 +104,15 @@ jobs:
 
       - name: Helm Lint # шаг для проверки Helm-чарта на соответствие стандартам с помощью helm lint
         run: |
-          helm lint ./kube2py
+          helm lint ./helm-charts/kube2py
 
       - name: Helm Template # шаг для генерации Kubernetes-манифестов из Helm-чарта с помощью helm template
         run: |
-          helm template kube2py ./kube2py -f ./kube2py/values.yaml
+          helm template kube2py ./helm-charts/kube2py -f ./helm-charts/kube2py/values.yaml
 
       - name: Helm Package # шаг для упаковки Helm-чарта в tgz-архив с помощью helm package. Helm может работать только с архивами формата tgz, поэтому upload не подойдет в данном случае.
         run: |
-          helm package ./kube2py
+          helm package ./helm-charts/kube2py
 
       - name: Upload helm package # шаг для загрузки tgz-архива с Helm-чартом в артефакты GitHub Actions
         uses: actions/upload-artifact@v4 # шаг для загрузки артефактов с результатами тестов и покрытия кода
