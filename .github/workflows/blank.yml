@@ -119,7 +119,7 @@ jobs:
         with: # параметры для шага upload-artifact
           name: helm-package # имя артефакта, который будет отображаться в UI
           path: |
-            ./*.tgz \
+            ./*.tgz
             ./cluster.yml
 
   deploy-helm-dev:
