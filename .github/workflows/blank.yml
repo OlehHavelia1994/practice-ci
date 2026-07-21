@@ -90,6 +90,7 @@ jobs:
     needs: python-ci # зависимость от джоба python-ci, чтобы этот джоб запускался только после успешного завершения python-ci
 
     steps:
+      - uses: actions/checkout@v4 # шаг для клонирования репозитория в рабочую директорию
       - name: Download helm artifacts # шаг для скачивания артефактов с результатами тестов и покрытия кода
         uses: actions/download-artifact@v4 # шаг для скачивания артефактов с результатами тестов и покрытия кода
         with: # параметры для шага download-artifact
@@ -117,7 +118,9 @@ jobs:
         uses: actions/upload-artifact@v4 # шаг для загрузки артефактов с результатами тестов и покрытия кода
         with: # параметры для шага upload-artifact
           name: helm-package # имя артефакта, который будет отображаться в UI
-          path: ./*.tgz # путь к директории с артефактами, которые нужно загрузить
+          path: |
+            ./*.tgz \
+            ./cluster.yml
 
   deploy-helm-dev:
     name: Deploy Helm to Development
