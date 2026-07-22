@@ -5,11 +5,21 @@ on: # триггер для запуска workflow
     branches: ["main"]
   pull_request: # на запуск workflow при создании PR в ветку main
     branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        description: 'Environment to deploy to'
+        type: choice
+        options: ["development", "staging"]
+      message:
+        required: false
+        description: 'test message'
+        type: string
 
 env: # переменные окружения, которые будут доступны во всех шагах
   PYTHON_VERSION: "3.10"
   PYTHON_APP_NAME: "kube2py"
-
 
 concurrency: # настройка параллельного запуска workflow
   group: ${{ github.workflow }}-${{ github.ref_name }} # группа для параллельного запуска workflow. В данном случае группа будет содержать имя workflow и имя ветки, в которую был сделан пуш.
