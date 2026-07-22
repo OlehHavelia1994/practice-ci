@@ -11,7 +11,12 @@ env: # переменные окружения, которые будут дос
   PYTHON_APP_NAME: "kube2py"
 jobs:
   python-ci: # имя джоба, которое будет отображаться в UI
-    runs-on: ubuntu-latest # используемый образ для запуска джоба
+    strategy: # стратегия для запуска джоба
+      matrix: # матрица для запуска джоба на разных версиях Python
+        python-version: [3.10, 3.8] # версии Python, на которых будет запускаться джоб
+        os: [ubuntu-latest, windows-latest] # операционные системы, на которых будет запускаться джоб
+
+    runs-on: ${{ matrix.os }} # используемый образ для запуска джоба
     defaults: # значения по умолчанию для шагов
       run: # значения по умолчанию для шага run
         working-directory: ./src # рабочая директория по дефолту чтобы не прописывать путь к src в каждом шаге
@@ -19,9 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4 # шаг для клонирования репозитория в рабочую директорию
       - uses: actions/setup-python@v6 # шаг для установки Python в рабочую директорию
-        name: Setup Python ${{ env.PYTHON_VERSION }}
+        name: Setup Python ${{ matrix.python-version }} # имя шага, которое будет отображаться в UI
         with: # параметры для шага setup-python
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ matrix.python-version }} # версия Python, которую нужно установить
 
       - name: Install dependencies # шаг для установки зависимостей проекта
         run: |
