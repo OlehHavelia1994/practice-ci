@@ -10,6 +10,7 @@ env: # переменные окружения, которые будут дос
   PYTHON_VERSION: "3.10"
   PYTHON_APP_NAME: "kube2py"
 
+
 concurrency: # настройка параллельного запуска workflow
   group: ${{ github.workflow }}-${{ github.ref_name }} # группа для параллельного запуска workflow. В данном случае группа будет содержать имя workflow и имя ветки, в которую был сделан пуш.
   cancel-in-progress: true # отмена всех предыдущих запущенных workflow в группе при запуске нового workflow. В данном случае при пуше в ветку main будут отменяться все предыдущие запущенные workflow в группе CI-main.
